@@ -1,0 +1,108 @@
+
+
+<!-- LOOP START FOR RENDERING ALL PHOTOS -->
+<% @like.each do |like| %>
+
+<!-- IF STATEMENT FOR RENDERING ONLY LIKED PHOTOS -->
+<% if like.user.id == current_user.id %>
+
+<div class="panel panel-default">
+  <!-- RENDER CURRENT USER USERNAME (LINKED) AND POST TIMESTAMP -->
+  <div class="panel-heading">
+    <h3 class="panel-title">
+      <a href="/users/<%=like.user.id%>"><%=like.user.username%></a>
+      <%= time_ago_in_words(like.photo.created_at) %> ago
+    </h3>
+  </div>
+
+  <!-- RENDER PHOTO -->
+  <div class="panel-body">
+    <dd>
+      <img src="<%=like.photo.image%>" class="img-responsive" alt="Responsive image">
+    </dd>
+    <dd>
+      <!-- FORM WITH GLYPHCON FOR LIKING/UNLIKING PHOTO -->
+      <form action="/create_like" method="post">
+        <!-- Hidden input for authenticity token to protect from forgery -->
+        <input name="authenticity_token" type="hidden" value="<%= form_authenticity_token %>">
+        <!-- HIDDEN INPUTS FOR CURRENT USER USERID AND PHOTO ID-->
+        <input type="hidden" name="photo_id" value="<%=like.photo.id%>"></input>
+        <input type="hidden" name="user_id" value ="<%=current_user.id%>"></input>
+        <!--INPUT BOX FOR A NEW COMMENT-->
+        <button>
+          <span class="glyphicon glyphicon-heart" aria-hidden="true"></span>
+        </button>
+
+      <!-- LOGICS FOR RENDERING LIKES WITH PROPER GRAMMAR -->
+        <% counter = like.photo.likes.count %>
+        <% if like.photo.likes.count == 0 %>
+          Be the first to like this
+
+        <% elsif like.photo.likes.count == 1 %>
+          <% like.photo.likes.each do |like| %>
+            <%= User.find_by( :id => like.user_id).username %>
+            likes this
+          <% end %>
+
+        <% elsif like.photo.likes.count == 2 %>
+          <% like.photo.likes.each do |like| %>
+            <% if counter > 1 %>
+              <%= User.find_by( :id => like.user_id).username %>
+              <% counter = counter - 1 %>
+            <% elsif counter <= 1 %>
+              and
+              <%= User.find_by( :id => like.user_id).username %>
+              like this
+            <% end %>
+          <% end %>
+
+        <% elsif like.photo.likes.count > 2 %>
+          <% like.photo.likes.each do |like| %>
+            <% if counter > 1 %>
+              <%= User.find_by( :id => like.user_id).username %>
+              ,
+              <% counter = counter - 1 %>
+            <% elsif counter <= 1 %>
+              and
+              <%= User.find_by( :id => like.user_id).username %>
+              like this
+            <% end %>
+          <% end %>
+        <% end %>
+        <!-- END LOGICS FOR RENDERING USERS THAT HAVE LIKED A PHOTO -->
+        </form>
+      </dd>
+    </div>
+
+    <!-- RENDER ALL EXISTING PHOTO COMMENTS -->
+    <% like.photo.comments.each do |comment| %>
+      <div class="panel-body">
+        <dd>
+          <a href="/users/<%=comment.user.id%>"><%=comment.user.username%></a>
+          <%= time_ago_in_words(comment.created_at) %> ago
+        </dd>
+        <dd>
+          <%=comment.body%>
+        </dd>
+      <% end %>
+
+
+      <!-- FORM FOR ADDING NEW COMMENT -->
+      <form action="/create_comment" method="post">
+        <!-- Hidden input for authenticity token to protect from forgery -->
+        <input name="authenticity_token" type="hidden" value="<%= form_authenticity_token %>">
+        <!-- HIDDEN INPUTS FOR CURRENT USER USERID AND PHOTO ID-->
+        <input type="hidden" name="photo_id" value="<%=like.photo.id%>"></input>
+        <input type="hidden" name="user_id" value ="<%=current_user.id%>"></input>
+        <!--INPUT BOX FOR A NEW COMMENT-->
+        <input type="text" id="body" name="body" placeholder="Add a comment"
+        class="form-control" required>
+      </form>
+    <!-- END PANEL BODY -->
+    </div>
+<!-- END PANEL -->
+</div>
+<!-- END IF LOOP FOR FINDING LIKED PICTURES -->
+<% end %>
+<!-- END DO LOOP FOR RENDERING ALL PHOTOS -->
+<% end %>
